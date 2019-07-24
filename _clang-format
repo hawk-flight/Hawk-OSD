@@ -1,0 +1,9 @@
+BasedOnStyle: Chromium
+IndentWidth: 4
+Language: Cpp
+ColumnLimit: 180
+AlignEscapedNewlines: DontAlign 
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: true
+NamespaceIndentation: All
+BreakBeforeBraces: Attach
