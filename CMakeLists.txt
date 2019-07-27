@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to DEBUG")
@@ -9,7 +9,8 @@ endif()
 
 message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 
-project(hawk-osd C CXX ASM)
+project(hawk-osd VERSION 1.0
+  LANGUAGES C CXX ASM)
 
 include(cmake/utils.cmake)
 
@@ -63,18 +64,23 @@ target_compile_options(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE
+    PRIVATE stm32g474xx
 )
 
 target_link_options(${PROJECT_NAME}
     PRIVATE
         -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map,--cref
 )
-
 utils_target_set_linker_script(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32g474.ld
+)
+utils_target_set_linker_script(stm32g474xx
+  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g474.ld
 )
 
 utils_target_generate_hex(${PROJECT_NAME})
 utils_target_generate_bin(${PROJECT_NAME})
 utils_target_print_size(${PROJECT_NAME})
+
+
+add_subdirectory(lib)
