@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
-set(TARGET_CPU "cortex-m0")
+set(TARGET_CPU "cortex-m4")
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU})
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-set(CMAKE_C_COMPILER   arm-none-eabi-gcc)
-set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
-set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
-set(CMAKE_SIZE_UTIL    arm-none-eabi-size)
+set(TOOLCHAIN_PATH "toolchain/compiler/bin/arm-none-eabi-")
+
+set(CMAKE_C_COMPILER   "${TOOLCHAIN_PATH}gcc")
+set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PATH}g++")
+set(CMAKE_ASM_COMPILER "${TOOLCHAIN_PATH}gcc")
+set(CMAKE_SIZE_UTIL    "${TOOLCHAIN_PATH}size")
 
 
 set(COMMON_FLAGS "-mthumb -mcpu=${TARGET_CPU}")
