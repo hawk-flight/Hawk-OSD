@@ -7,7 +7,7 @@ set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU})
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-set(TOOLCHAIN_PATH "toolchain/compiler/bin/arm-none-eabi-")
+set(TOOLCHAIN_PATH "toolchain/bin/arm-none-eabi-")
 
 set(CMAKE_C_COMPILER   "${TOOLCHAIN_PATH}gcc")
 set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PATH}g++")

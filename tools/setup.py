@@ -6,12 +6,11 @@ import subprocess
 import zipfile
 try:
     from colorama import Fore
-except():
+except ImportError:
     if subprocess.call([sys.executable, "-m", "pip", "install", "colorama"
                         ]) != 0:
         sys.exit("Could not install colorama!")
     from colorama import Fore
-
 
 def log(*args):
     s = "".join(args) + Fore.RESET
@@ -26,6 +25,8 @@ INFO = Fore.LIGHTBLUE_EX
 
 
 def downloadFile(url, fileName):
+    if os.path.isfile(fileName):
+        return
     with urllib.request.urlopen(url) as u:
         with open(fileName, 'wb') as f:
             contentLen = u.headers['content-length']
@@ -43,8 +44,7 @@ def downloadFile(url, fileName):
                     break
                 dlCount += len(buffer)
                 f.write(buffer)
-                status = r"%10d  [%3.2f%%]" % (dlCount, dlCount * 100. / contentLen)
-                print(status, end="\r")
+                print("%10d  [%3.2f%%]" % (dlCount, dlCount * 100. / contentLen), end="\r")
 
 def unzip(zipFile, destPath):
     log(INFO, "Unzipping file '{0}'".format(zipFile))
@@ -59,6 +59,14 @@ def unzip(zipFile, destPath):
             print("%i/%i [%3.2f%%]" % (index, countFiles, (count * 100. / uncompSize)), end="\r")
             index += 1
 
+def extract(zipFile, destPath):
+    log(INFO, "Decompressing file '{0}'".format(zipFile))
+    os.makedirs(destPath, exist_ok=True)
+    currCwd = os.getcwd()
+    os.chdir(destPath)
+    subprocess.call([bsdtar, "-v", "-x", "-f", os.path.abspath(currCwd + "/" + zipFile)])
+    os.chdir(currCwd)
+
 
 def changeDir(path):
     log(INFO, "Changing working directory: '{0}'".format(path))
@@ -67,37 +75,51 @@ def changeDir(path):
 
 # configuration variables
 
-cmsis_url = "https://keilpack.azureedge.net/pack/Keil.STM32G4xx_DFP.1.1.0.pack"
 toolchain_url = "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-win32.zip?revision=2f0fd855-d015-423c-9c76-c953ae7e730b?product=GNU%20Arm%20Embedded%20Toolchain,ZIP,,Windows,8-2019-q3-update"
+cmake_url = "https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-win64-x64.zip"
+openocd_url = "http://sysprogs.com/getfile/552/openocd-20190715.7z"
+libarchive_url = "https://liquidtelecom.dl.sourceforge.net/project/ezwinports/libarchive-3.3.1-w32-bin.zip"
 
 toolchain_path = "toolchain"
-cache_path = "cache"
-
-cmsis_dir = "cmsis"
-tools_dir = "tools"
+cache_dir = "cache"
 
 # go to root directory
-changeDir("..")
+changeDir(os.path.dirname(os.path.abspath(__file__)) + "/../")
 
 # delete toolchain folder if it exists
-if os.path.isdir(toolchain_path):
-    shutil.rmtree(toolchain_path, ignore_errors=True)
+# if os.path.isdir(toolchain_path):
+#     shutil.rmtree(toolchain_path, ignore_errors=True)
 
 # create toolchain directory
 if not os.path.isdir(toolchain_path):
     os.mkdir(toolchain_path)
 changeDir(toolchain_path)
 
+# delete all folders except cache
+for f in os.listdir("."):
+    if f != cache_dir:
+        shutil.rmtree(f, ignore_errors=True)
+
 # create cache directory
-os.mkdir(cache_path)
-changeDir(cache_path)
-# download cmsis and toolchain
-downloadFile(cmsis_url, cmsis_dir + ".zip")
-downloadFile(toolchain_url, tools_dir + ".zip")
-# unzip cmsis and toolchain
-unzip(cmsis_dir + ".zip", "../" + cmsis_dir)
-unzip(tools_dir + ".zip", "../" + tools_dir)
+if not os.path.isdir(cache_dir):
+    os.mkdir(cache_dir)
+changeDir(cache_dir)
+
+# download toolchain, cmake and openocd
+downloadFile(libarchive_url, "libarchive.zip")
+downloadFile(toolchain_url, "toolchain.zip")
+downloadFile(cmake_url, "cmake.zip")
+downloadFile(openocd_url, "openocd.7z")
+
+# extract libarchive, and set bsdtar path
+unzip("libarchive.zip", "../libarchive")
+bsdtar = os.path.abspath("../libarchive/bin/bsdtar.exe")
+
+# extract toolchain, cmake and openocd
+unzip("toolchain.zip", "../")
+unzip("cmake.zip", "../cmake")
+extract("openocd.7z", "../openocd")
 
 # delete cache dir
-changeDir("..")
-shutil.rmtree(cache_path)
+# changeDir("..")
+# shutil.rmtree(cache_dir)
