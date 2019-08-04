@@ -7,22 +7,21 @@ set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU})
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-set(TOOLCHAIN_PATH "toolchain/bin/arm-none-eabi-")
+set(TOOLCHAIN_PATH "${CMAKE_CURRENT_LIST_DIR}/../toolchain/bin/arm-none-eabi-")
 
-set(CMAKE_C_COMPILER   "${TOOLCHAIN_PATH}gcc")
-set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PATH}g++")
-set(CMAKE_ASM_COMPILER "${TOOLCHAIN_PATH}gcc")
-set(CMAKE_SIZE_UTIL    "${TOOLCHAIN_PATH}size")
+set(CMAKE_C_COMPILER   "${TOOLCHAIN_PATH}gcc.exe" CACHE STRING "C compiler path" FORCE)
+set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PATH}g++.exe" CACHE STRING "C++ compiler path" FORCE)
+set(CMAKE_ASM_COMPILER "${TOOLCHAIN_PATH}gcc.exe" CACHE STRING "Asm compiler path" FORCE)
+set(CMAKE_SIZE_UTIL    "${TOOLCHAIN_PATH}size.exe" CACHE STRING "Size utility path" FORCE)
 
-
-set(COMMON_FLAGS "-mthumb -mcpu=${TARGET_CPU}")
-set(C_CXX_FLAGS  "--specs=nano.specs -ffunction-sections -fdata-sections -ffreestanding")
+set(COMMON_FLAGS "-mcpu=${TARGET_CPU}")
+set(C_CXX_FLAGS  "-ffunction-sections -fdata-sections -ffreestanding")
 set(CXX_FLAGS    "-fno-exceptions -fno-rtti -fno-threadsafe-statics")
 
 set(CMAKE_C_FLAGS_INIT          "${COMMON_FLAGS} ${C_CXX_FLAGS}"              CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS_INIT        "${COMMON_FLAGS} ${C_CXX_FLAGS} ${CXX_FLAGS}" CACHE STRING "" FORCE)
 set(CMAKE_ASM_FLAGS_INIT        "${COMMON_FLAGS} -x assembler-with-cpp"       CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,--gc-sections"                           CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,--gc-sections,--relax,--check-sections,--unresolved-symbols=report-all,--warn-common,--warn-section-align --specs=nano.specs -Os" CACHE STRING "" FORCE)
 
 set(CMAKE_C_FLAGS_DEBUG     "-Og -g"          CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG   "-Og -g"          CACHE STRING "" FORCE)

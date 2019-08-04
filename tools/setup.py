@@ -4,13 +4,14 @@ import urllib.request
 import sys
 import subprocess
 import zipfile
+import json
 try:
-    from colorama import Fore
+    from colorama import Fore, init
 except ImportError:
     if subprocess.call([sys.executable, "-m", "pip", "install", "colorama"
                         ]) != 0:
         sys.exit("Could not install colorama!")
-    from colorama import Fore
+    from colorama import Fore, init
 
 def log(*args):
     s = "".join(args) + Fore.RESET
@@ -23,6 +24,7 @@ ACT = Fore.LIGHTCYAN_EX
 OK = Fore.LIGHTGREEN_EX
 INFO = Fore.LIGHTBLUE_EX
 
+init()
 
 def downloadFile(url, fileName):
     if os.path.isfile(fileName):
@@ -79,16 +81,14 @@ toolchain_url = "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019
 cmake_url = "https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-win64-x64.zip"
 openocd_url = "http://sysprogs.com/getfile/552/openocd-20190715.7z"
 libarchive_url = "https://liquidtelecom.dl.sourceforge.net/project/ezwinports/libarchive-3.3.1-w32-bin.zip"
+ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip"
 
 toolchain_path = "toolchain"
 cache_dir = "cache"
 
 # go to root directory
-changeDir(os.path.dirname(os.path.abspath(__file__)) + "/../")
-
-# delete toolchain folder if it exists
-# if os.path.isdir(toolchain_path):
-#     shutil.rmtree(toolchain_path, ignore_errors=True)
+rootDirPath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + "/../")
+changeDir(rootDirPath)
 
 # create toolchain directory
 if not os.path.isdir(toolchain_path):
@@ -105,11 +105,12 @@ if not os.path.isdir(cache_dir):
     os.mkdir(cache_dir)
 changeDir(cache_dir)
 
-# download toolchain, cmake and openocd
+# download toolchain, cmake, openocd and ninja
 downloadFile(libarchive_url, "libarchive.zip")
 downloadFile(toolchain_url, "toolchain.zip")
 downloadFile(cmake_url, "cmake.zip")
 downloadFile(openocd_url, "openocd.7z")
+downloadFile(ninja_url, "ninja.zip")
 
 # extract libarchive, and set bsdtar path
 unzip("libarchive.zip", "../libarchive")
@@ -118,8 +119,34 @@ bsdtar = os.path.abspath("../libarchive/bin/bsdtar.exe")
 # extract toolchain, cmake and openocd
 unzip("toolchain.zip", "../")
 unzip("cmake.zip", "../cmake")
+unzip("ninja.zip", "../ninja")
 extract("openocd.7z", "../openocd")
 
-# delete cache dir
-# changeDir("..")
-# shutil.rmtree(cache_dir)
+# change to root dir
+changeDir(os.path.relpath(rootDirPath))
+
+# create .vscode folder if it doesn't exist
+if not os.path.isdir(".vscode"):
+    os.mkdir(".vscode")
+changeDir(".vscode")
+
+# read settings.json file if it exists
+settings = {}
+if os.path.isfile("settings.json"):
+    with open("settings.json", "r") as f:
+        settings = json.load(f)
+
+# change settings
+settings["cmake.cmakePath"] = os.path.abspath(rootDirPath + "/" + toolchain_path + "/cmake/cmake-3.15.0-win64-x64/bin/cmake.exe")
+settings["cmake.environment"] = { 
+    "PATH" : os.environ["PATH"] + os.pathsep + os.path.abspath(rootDirPath + "/" + toolchain_path + "/ninja") 
+}
+settings["cmake.configureSettings"] = {
+    "CMAKE_MAKE_PROGRAM": os.path.abspath(rootDirPath + "/" + toolchain_path + "/ninja/ninja.exe")
+}
+settings["cmake.generator"] = "Ninja"
+
+# save settings.json
+with open("settings.json", "w") as f:
+    json.dump(settings, f, indent=4)
+

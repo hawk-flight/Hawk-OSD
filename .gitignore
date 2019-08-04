@@ -1,1 +1,8 @@
 toolchain
+toolchain/*
+build
+build/*
+
+.vscode/*
+!.vscode/cmake-kits.json
+!.vscode/tasks.json

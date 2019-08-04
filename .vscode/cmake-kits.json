@@ -1,0 +1,9 @@
+[
+    {
+        "name": "STM32G474",
+        "toolchainFile": "cmake/toolchain.cmake",
+        "preferredGenerator": {
+            "name": "Ninja"
+        }
+    }
+]
